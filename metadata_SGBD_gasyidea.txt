@@ -1,0 +1,108 @@
+
+SGBD : POSTGRESQL 9.4 
+
+-- CREATE 1 ROLE DE GROUPE: pour accéder et classifier les groupes d'utilisateurs
+CREATE ROLE pers_user
+  NOSUPERUSER INHERIT NOCREATEDB NOCREATEROLE REPLICATION;
+  
+-- CREATE 2 ROLES DE CONNEXION
+-- 1e : pour le droits d'edition.
+CREATE ROLE cnx_master LOGIN
+  ENCRYPTED PASSWORD 'md548a8edce4820c0cee17b78fecda8eea0'
+  NOSUPERUSER INHERIT NOCREATEDB NOCREATEROLE REPLICATION;
+GRANT pers_user TO cnx_master;
+
+-- 2e : pour le droits de selection (Read) uniquement.
+CREATE ROLE cnx_operateur LOGIN
+  ENCRYPTED PASSWORD 'md5577a8a03901788c53f1a1e834fad40b8'
+  NOSUPERUSER INHERIT NOCREATEDB NOCREATEROLE NOREPLICATION;
+GRANT pers_user TO cnx_operateur;
+
+
+--1ere BASE A CREER
+-- CREATE DATABASE data_django: pour le fonctionnement de django serveur
+
+CREATE DATABASE data_django
+  WITH OWNER = postgres
+       ENCODING = 'UTF8'
+       TABLESPACE = pg_default
+       LC_COLLATE = 'French_France.1252'
+       LC_CTYPE = 'French_France.1252'
+       CONNECTION LIMIT = -1;
+GRANT CONNECT, TEMPORARY ON DATABASE data_django TO public;
+GRANT ALL ON DATABASE data_django TO postgres;
+GRANT CONNECT ON DATABASE data_django TO pers_user;
+
+
+
+--2e BASE A CREER
+-- CREATE database base_cve : pour stocker les données nvdce
+CREATE DATABASE base_cve
+  WITH OWNER = postgres
+       ENCODING = 'UTF8'
+       TABLESPACE = pg_default
+       LC_COLLATE = 'French_France.1252'
+       LC_CTYPE = 'French_France.1252'
+       CONNECTION LIMIT = -1;
+	  
+-- Table: nvdcve_2_0_modified :Base de common vulnerability and exposures 
+(source de données : https://cve.mitre.org/cve/cna.html
+la conception de nom de champs est adaptée à la base téléchargée)
+
+-- DROP TABLE nvdcve_2_0_modified;
+
+CREATE TABLE nvdcve_2_0_modified
+(
+  "ID1" integer,
+  nvd_xml_version double precision,
+  pub_date timestamp with time zone,
+  id character varying(255),
+  id2 character varying(255),
+  operator character varying(255),
+  negate character(1),
+  name character varying(255),
+  operator3 character varying(255),
+  negate4 character varying(255),
+  name5 character varying(255),
+  ns3_product character varying(255),
+  ns3_cve_id character varying(255),
+  ns3_published_datetime character varying(255),
+  ns3_last_modified_datetime character varying(255),
+  ns4_score double precision,
+  ns4_access_vector character varying(255),
+  approximated character(1),
+  ns4_access_complexity character varying(255),
+  approximated6 character(1),
+  ns4_authentication character varying(255),
+  approximated7 character(1),
+  ns4_confidentiality_impact character varying(255),
+  approximated8 character(1),
+  ns4_integrity_impact character varying(255),
+  approximated9 character(1),
+  ns4_availability_impact character varying(255),
+  approximated10 character(1),
+  ns4_source character varying(255),
+  ns4_generated_on_datetime character varying(255),
+  ns3_security_protection character varying(255),
+  id11 character varying(255),
+  ns2_lang character varying(255),
+  reference_type character varying(255),
+  ns3_source character varying(255),
+  ns3_reference character varying(255),
+  href character varying(255),
+  ns2_lang12 character varying(255),
+  ns3_summary character varying(255),
+  system character varying(255),
+  href13 character varying(255),
+  name14 character varying(255),
+  system15 character varying(255),
+  href16 character varying(255),
+  name17 character varying(255)
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE nvdcve_2_0_modified
+  OWNER TO postgres;
+GRANT ALL ON TABLE nvdcve_2_0_modified TO postgres;
+GRANT SELECT ON TABLE nvdcve_2_0_modified TO pers_user;
